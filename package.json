@@ -5,6 +5,7 @@
   "dependencies": {
   	"express":"latest",
   	"passport":"latest",
-  	"passport-weibo-2":"latest"
+  	"passport-weibo-2":"latest",
+    "request":"latest"
   }
 }
