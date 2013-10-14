@@ -1,0 +1,10 @@
+{
+  "repository": "weibo-bot",
+  "version": "0.0.0",
+  "description": "an weibo bot to create an account with lots of friends",
+  "dependencies": {
+  	"express":"latest",
+  	"passport":"latest",
+  	"passport-weibo-2":"latest"
+  }
+}
