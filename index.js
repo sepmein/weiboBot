@@ -1,7 +1,8 @@
 var express = require("express"),
 	passport = require('passport'),
 	util = require('util'),
-	WeiboStrategy = require('passport-weibo-2').Strategy;
+	WeiboStrategy = require('passport-weibo-2').Strategy,
+	api = require('./api');
 
 var appKey = "1878841322"
 var appSecret = "eafa164fe950c831c8e604dfcc0221a2";
@@ -26,9 +27,8 @@ passport.use(new WeiboStrategy({
 	clientSecret: appSecret,
 	callbackURL: "http://127.0.0.1:3000/oauth/weibo/callback"
 }, function(accessToken, refreshToken, profile, done) {
-	console.log('accessToken: ' + accessToken);
-	console.log('refreshToken: ' + refreshToken);
-	console.log('profile: ' + profile);
+	console.log(accessToken);
+	api.setToken(accessToken).trendsWeekly();
 	process.nextTick(function() {
 		return done(null, profile);
 	})

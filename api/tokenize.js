@@ -7,5 +7,7 @@ function getCurrentUsersToken(){
 }
 
 function tokenInjection(){
-	
+
 }
+
+weibo.token('asdfasldfkj').friendshipsCreate('asdfasdf');
