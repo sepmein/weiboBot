@@ -38,7 +38,7 @@ Weibo.prototype.accountGetUid = function() {
 //===========关系接口============
 
 //根据uid关注用户
-Weibo.prototype.friendshipsCreate = function(uid) {
+Weibo.prototype.friendshipsCreate = function(uid, next) {
 	request(this.accessTokenMiddleware({
 			method: 'POST',
 			uri: weiboApiUrl + 'friendships/create' + '.json',
@@ -47,12 +47,12 @@ Weibo.prototype.friendshipsCreate = function(uid) {
 			}
 		}),
 		function(error, response, body) {
-			console.log(body);
+			next(body);
 		})
 };
 
 //取消关注一个用户
-Weibo.prototype.friendshipsDestroy = function(uid) {
+Weibo.prototype.friendshipsDestroy = function(uid, cb) {
 	request(this.accessTokenMiddleware({
 			method: 'POST',
 			uri: weiboApiUrl + 'friendships/destroy' + '.json',
@@ -61,7 +61,7 @@ Weibo.prototype.friendshipsDestroy = function(uid) {
 			}
 		}),
 		function(error, response, body) {
-			console.log(body);
+			cb(body);
 		});
 };
 
@@ -96,7 +96,7 @@ Weibo.prototype.friendshipsFriendsIds = function(next) {
 };
 
 
-//获取用户粉丝的用户UID列表
+//获取粉丝的UID列表
 Weibo.prototype.friendshipsFollowersIds = function(next) {
 	var self = this;
 	request(this.accessTokenMiddleware({
@@ -112,16 +112,17 @@ Weibo.prototype.friendshipsFollowersIds = function(next) {
 };
 
 //获取用户的活跃粉丝列表 - 返回默认的20条记录
-Weibo.prototype.friendshipsFollowersActive = function(uid) {
+Weibo.prototype.friendshipsFollowersActive = function(next) {
+	var self = this;
 	request(this.accessTokenMiddleware({
 			method: 'GET',
 			uri: weiboApiUrl + 'friendships/followers/active' + '.json',
 			qs: {
-				uid: uid
+				uid: self.uid
 			}
 		}),
 		function(error, response, body) {
-			console.log(body);
+			next(body);
 		})
 };
 
