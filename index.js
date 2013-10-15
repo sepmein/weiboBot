@@ -28,7 +28,13 @@ passport.use(new WeiboStrategy({
 	callbackURL: "http://127.0.0.1:3000/oauth/weibo/callback"
 }, function(accessToken, refreshToken, profile, done) {
 	console.log(accessToken);
-	api.setToken(accessToken).trendsWeekly();
+	//api.setToken(accessToken).trendsWeekly();
+	api.setToken(accessToken).suggestionsFavoritesHot(function(body) {
+		var id = JSON.parse(body)[0].id;
+		api.setToken(accessToken).statusesRepost(id, function(body) {
+			console.log(body);
+		});
+	});
 	process.nextTick(function() {
 		return done(null, profile);
 	})
