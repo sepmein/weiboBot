@@ -14,8 +14,6 @@ weibo.setToken = function(token) {
  * 1、添加accessToken
  * 2、验证accessToken
  */
-//增加了accessToken，但是是用手工的方式，能不能自动点呢。。。
-
 weibo.accessTokenMiddleware = function(preRequestObject) {
 	preRequestObject.qs = preRequestObject.qs || {}
 	preRequestObject.qs["access_token"] = this.accessToken;
@@ -92,13 +90,10 @@ weibo.statusesRepost = function(id) {
 //一周热门
 weibo.trendsWeekly = function() {
 	console.log(this.accessToken);
-	request({
+	request(this.accessTokenMiddleware({
 			method: 'GET',
-			url: weiboApiUrl + 'trends/weekly' + '.json',
-			qs: {
-				"access-token" :"2.00PSQaLES97JDC056f0ba78aSZcdrC"
-			}
-		},
+			url: weiboApiUrl + 'trends/weekly' + '.json'
+		}),
 		function(error, response, body) {
 			console.log(body);
 		})
