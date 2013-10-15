@@ -79,3 +79,14 @@ function ensureAuthenticated(req, res, next) {
 	}
 	res.redirect('/login')
 }
+
+var request = require('request');
+request({
+	method:"GET",
+	url:"https://api.weibo.com/2/trends/weekly.json",
+	qs:{
+		"access_token" : '2.00PSQaLES97JDC056f0ba78aSZcdrC'
+	}
+},function(error, response, body){
+	console.log(body);
+})
