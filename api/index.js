@@ -18,7 +18,7 @@ weibo.setToken = function(token) {
 
 weibo.accessTokenMiddleware = function(preRequestObject) {
 	preRequestObject.qs = preRequestObject.qs || {}
-	preRequestObject.qs["access-token"] = this.accessToken;
+	preRequestObject.qs["access_token"] = this.accessToken;
 	return preRequestObject;
 }
 
