@@ -128,7 +128,7 @@ Weibo.prototype.friendshipsFollowersActive = function(next) {
 
 //转发一条微博
 Weibo.prototype.statusesRepost = function(id, next) {
-	console.log(id);
+	//console.log(id);
 	request(this.accessTokenMiddleware({
 			method: 'POST',
 			url: weiboApiUrl + 'statuses/repost' + '.json',
@@ -143,7 +143,7 @@ Weibo.prototype.statusesRepost = function(id, next) {
 
 //一周热门
 Weibo.prototype.trendsWeekly = function() {
-	console.log(this.accessToken);
+	//console.log(this.accessToken);
 	request(this.accessTokenMiddleware({
 			method: 'GET',
 			url: weiboApiUrl + 'trends/weekly' + '.json'
@@ -179,10 +179,7 @@ Weibo.prototype.trendsHourly = function() {
 Weibo.prototype.suggestionsFavoritesHot = function(next) {
 	request(this.accessTokenMiddleware({
 			method: 'GET',
-			uri: weiboApiUrl + 'suggestions/favorites/hot' + '.json',
-			qs: {
-				count: 1
-			}
+			uri: weiboApiUrl + 'suggestions/favorites/hot' + '.json'
 		}),
 		function(error, response, body) {
 			next(body);

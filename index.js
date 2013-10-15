@@ -25,7 +25,7 @@ passport.deserializeUser(function(obj, done) {
 passport.use(new WeiboStrategy({
 	clientID: appKey,
 	clientSecret: appSecret,
-	callbackURL: "http://127.0.0.1:3000/oauth/weibo/callback"
+	callbackURL: "http://kokiya-20139.apne1.actionbox.io:3000/oauth/weibo/callback"
 }, function(accessToken, refreshToken, profile, done) {
 	bot.init(accessToken, profile.id).start();
 }));
