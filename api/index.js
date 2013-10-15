@@ -3,109 +3,160 @@ var request = require('request');
 var weiboApiUrl = 'https://api.weibo.com/2/';
 
 var weibo = {};
-var appKey = "1878841322"
 
-weibo.setToken = function(token) {
-	this.accessToken = token;
-	return this;
-};
+function Weibo(accessToken, uid) {
+	this.accessToken = accessToken;
+	this.uid = uid;
+}
+var appKey = "1878841322";
+
+
 
 /**TODO 所有的api请求都应像类似经过express middleware的东西，在发送之前
  * 1、添加accessToken
  * 2、验证accessToken
  */
-//增加了accessToken，但是是用手工的方式，能不能自动点呢。。。
-
-weibo.accessTokenMiddleware = function(preRequestObject) {
-	preRequestObject.qs = preRequestObject.qs || {}
+Weibo.prototype.accessTokenMiddleware = function(preRequestObject) {
+	preRequestObject.qs = preRequestObject.qs || {};
 	preRequestObject.qs["access_token"] = this.accessToken;
+	//console.dir(preRequestObject.qs);
 	return preRequestObject;
 }
 
 //get UID
-weibo.accountGetUid = function() {
+Weibo.prototype.accountGetUid = function() {
+	var self = this;
 	request(this.accessTokenMiddleware({
 			method: 'GET',
 			uri: weiboApiUrl + 'account/get_uid' + '.json'
 		}),
 		function(error, response, body) {
-			console.log(body);
+			self.uid = JSON.parse(body).uid;
 		})
 };
 
+//===========关系接口============
+
 //根据uid关注用户
-weibo.friendshipsCreate = function(uid) {
+Weibo.prototype.friendshipsCreate = function(uid, next) {
 	request(this.accessTokenMiddleware({
 			method: 'POST',
 			uri: weiboApiUrl + 'friendships/create' + '.json',
-			qs: {
+			form: {
 				uid: uid
 			}
 		}),
 		function(error, response, body) {
-			console.log(body);
+			next(body);
 		})
 };
 
 //取消关注一个用户
-weibo.friendshipsDestroy = function(uid) {
+Weibo.prototype.friendshipsDestroy = function(uid, cb) {
 	request(this.accessTokenMiddleware({
 			method: 'POST',
 			uri: weiboApiUrl + 'friendships/destroy' + '.json',
-			qs: {
+			form: {
 				uid: uid
 			}
 		}),
 		function(error, response, body) {
-			console.log(body);
-		})
+			cb(body);
+		});
+};
+
+//获取用户的关注列表
+Weibo.prototype.friendshipsFriends = function(next) {
+	var self = this;
+	request(this.accessTokenMiddleware({
+			method: 'GET',
+			uri: weiboApiUrl + 'friendships/friends' + '.json',
+			qs: {
+				uid: self.uid
+			}
+		}),
+		function(error, response, body) {
+			next(body);
+		});
+};
+
+//获取用户关注对象UID列表
+Weibo.prototype.friendshipsFriendsIds = function(next) {
+	var self = this;
+	request(this.accessTokenMiddleware({
+			method: 'GET',
+			uri: weiboApiUrl + 'friendships/friends/ids' + '.json',
+			qs: {
+				uid: self.uid
+			}
+		}),
+		function(error, response, body) {
+			next(body);
+		});
+};
+
+
+//获取粉丝的UID列表
+Weibo.prototype.friendshipsFollowersIds = function(next) {
+	var self = this;
+	request(this.accessTokenMiddleware({
+			method: 'GET',
+			uri: weiboApiUrl + 'friendships/followers/ids' + '.json',
+			qs: {
+				uid: self.uid
+			}
+		}),
+		function(error, response, body) {
+			next(body);
+		});
 };
 
 //获取用户的活跃粉丝列表 - 返回默认的20条记录
-weibo.friendshipsFollowersActive = function(uid) {
+Weibo.prototype.friendshipsFollowersActive = function(next) {
+	var self = this;
 	request(this.accessTokenMiddleware({
 			method: 'GET',
 			uri: weiboApiUrl + 'friendships/followers/active' + '.json',
 			qs: {
-				uid: uid
+				uid: self.uid
 			}
 		}),
 		function(error, response, body) {
-			console.log(body);
+			next(body);
 		})
 };
 
+//===========微博接口============
+
 //转发一条微博
-weibo.statusesRepost = function(id) {
+Weibo.prototype.statusesRepost = function(id, next) {
+	console.log(id);
 	request(this.accessTokenMiddleware({
 			method: 'POST',
-			uri: weiboApiUrl + 'statuses/repost' + '.json',
-			qs: {
+			url: weiboApiUrl + 'statuses/repost' + '.json',
+			form: {
 				id: id
 			}
 		}),
 		function(error, response, body) {
-			console.log(body);
+			next(body);
 		})
 };
 
 //一周热门
-weibo.trendsWeekly = function() {
+Weibo.prototype.trendsWeekly = function() {
 	console.log(this.accessToken);
-	request({
+	request(this.accessTokenMiddleware({
 			method: 'GET',
-			url: weiboApiUrl + 'trends/weekly' + '.json',
-			qs: {
-				"access-token" :"2.00PSQaLES97JDC056f0ba78aSZcdrC"
-			}
-		},
+			url: weiboApiUrl + 'trends/weekly' + '.json'
+		}),
 		function(error, response, body) {
 			console.log(body);
 		})
 };
 
 //一日热门
-weibo.trendsDaily = function() {
+Weibo.prototype.trendsDaily = function() {
 	request(this.accessTokenMiddleware({
 			method: 'GET',
 			uri: weiboApiUrl + 'trends/daily' + '.json'
@@ -116,7 +167,7 @@ weibo.trendsDaily = function() {
 };
 
 //每时热门
-weibo.trendsHourly = function() {
+Weibo.prototype.trendsHourly = function() {
 	request(this.accessTokenMiddleware({
 			method: 'GET',
 			uri: weiboApiUrl + 'trends/hourly' + '.json'
@@ -127,7 +178,7 @@ weibo.trendsHourly = function() {
 };
 
 //返回系统推荐的热门收藏 - 只返回一条记录，为了bot的方便运行
-weibo.suggestionsFavoritesHot = function() {
+Weibo.prototype.suggestionsFavoritesHot = function(next) {
 	request(this.accessTokenMiddleware({
 			method: 'GET',
 			uri: weiboApiUrl + 'suggestions/favorites/hot' + '.json',
@@ -136,10 +187,9 @@ weibo.suggestionsFavoritesHot = function() {
 			}
 		}),
 		function(error, response, body) {
-			console.log(body);
+			next(body);
 		})
 };
 
 
-
-module.exports = weibo;
+module.exports = Weibo;

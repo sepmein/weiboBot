@@ -2,7 +2,7 @@ var express = require("express"),
 	passport = require('passport'),
 	util = require('util'),
 	WeiboStrategy = require('passport-weibo-2').Strategy,
-	api = require('./api');
+	Weibo = require('./api');
 
 var appKey = "1878841322"
 var appSecret = "eafa164fe950c831c8e604dfcc0221a2";
@@ -27,8 +27,14 @@ passport.use(new WeiboStrategy({
 	clientSecret: appSecret,
 	callbackURL: "http://127.0.0.1:3000/oauth/weibo/callback"
 }, function(accessToken, refreshToken, profile, done) {
-	console.log(accessToken);
-	api.setToken(accessToken).trendsWeekly();
+	var api = new Weibo(accessToken, profile.uid);
+	//api.setToken(accessToken).trendsWeekly();
+	api.suggestionsFavoritesHot(function(body) {
+		var id = JSON.parse(body)[0].id;
+		api.statusesRepost(id, function(body) {
+			console.log(body);
+		});
+	});
 	process.nextTick(function() {
 		return done(null, profile);
 	})
