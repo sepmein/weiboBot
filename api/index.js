@@ -3,37 +3,42 @@ var request = require('request');
 var weiboApiUrl = 'https://api.weibo.com/2/';
 
 var weibo = {};
-var appKey = "1878841322"
 
-weibo.setToken = function(token) {
-	this.accessToken = token;
-	return this;
-};
+function Weibo(accessToken, uid) {
+	this.accessToken = accessToken;
+	this.uid = uid;
+}
+var appKey = "1878841322";
+
+
 
 /**TODO 所有的api请求都应像类似经过express middleware的东西，在发送之前
  * 1、添加accessToken
  * 2、验证accessToken
  */
-weibo.accessTokenMiddleware = function(preRequestObject) {
+Weibo.prototype.accessTokenMiddleware = function(preRequestObject) {
 	preRequestObject.qs = preRequestObject.qs || {};
 	preRequestObject.qs["access_token"] = this.accessToken;
-	console.dir(preRequestObject.qs);
+	//console.dir(preRequestObject.qs);
 	return preRequestObject;
 }
 
 //get UID
-weibo.accountGetUid = function() {
+Weibo.prototype.accountGetUid = function() {
+	var self = this;
 	request(this.accessTokenMiddleware({
 			method: 'GET',
 			uri: weiboApiUrl + 'account/get_uid' + '.json'
 		}),
 		function(error, response, body) {
-			console.log(body);
+			self.uid = JSON.parse(body).uid;
 		})
 };
 
+//===========关系接口============
+
 //根据uid关注用户
-weibo.friendshipsCreate = function(uid) {
+Weibo.prototype.friendshipsCreate = function(uid) {
 	request(this.accessTokenMiddleware({
 			method: 'POST',
 			uri: weiboApiUrl + 'friendships/create' + '.json',
@@ -47,7 +52,7 @@ weibo.friendshipsCreate = function(uid) {
 };
 
 //取消关注一个用户
-weibo.friendshipsDestroy = function(uid) {
+Weibo.prototype.friendshipsDestroy = function(uid) {
 	request(this.accessTokenMiddleware({
 			method: 'POST',
 			uri: weiboApiUrl + 'friendships/destroy' + '.json',
@@ -57,11 +62,57 @@ weibo.friendshipsDestroy = function(uid) {
 		}),
 		function(error, response, body) {
 			console.log(body);
-		})
+		});
+};
+
+//获取用户的关注列表
+Weibo.prototype.friendshipsFriends = function(next) {
+	var self = this;
+	request(this.accessTokenMiddleware({
+			method: 'GET',
+			uri: weiboApiUrl + 'friendships/friends' + '.json',
+			qs: {
+				uid: self.uid
+			}
+		}),
+		function(error, response, body) {
+			next(body);
+		});
+};
+
+//获取用户关注对象UID列表
+Weibo.prototype.friendshipsFriendsIds = function(next) {
+	var self = this;
+	request(this.accessTokenMiddleware({
+			method: 'GET',
+			uri: weiboApiUrl + 'friendships/friends/ids' + '.json',
+			qs: {
+				uid: self.uid
+			}
+		}),
+		function(error, response, body) {
+			next(body);
+		});
+};
+
+
+//获取用户粉丝的用户UID列表
+Weibo.prototype.friendshipsFollowersIds = function(next) {
+	var self = this;
+	request(this.accessTokenMiddleware({
+			method: 'GET',
+			uri: weiboApiUrl + 'friendships/followers/ids' + '.json',
+			qs: {
+				uid: self.uid
+			}
+		}),
+		function(error, response, body) {
+			next(body);
+		});
 };
 
 //获取用户的活跃粉丝列表 - 返回默认的20条记录
-weibo.friendshipsFollowersActive = function(uid) {
+Weibo.prototype.friendshipsFollowersActive = function(uid) {
 	request(this.accessTokenMiddleware({
 			method: 'GET',
 			uri: weiboApiUrl + 'friendships/followers/active' + '.json',
@@ -74,8 +125,10 @@ weibo.friendshipsFollowersActive = function(uid) {
 		})
 };
 
+//===========微博接口============
+
 //转发一条微博
-weibo.statusesRepost = function(id, next) {
+Weibo.prototype.statusesRepost = function(id, next) {
 	console.log(id);
 	request(this.accessTokenMiddleware({
 			method: 'POST',
@@ -90,7 +143,7 @@ weibo.statusesRepost = function(id, next) {
 };
 
 //一周热门
-weibo.trendsWeekly = function() {
+Weibo.prototype.trendsWeekly = function() {
 	console.log(this.accessToken);
 	request(this.accessTokenMiddleware({
 			method: 'GET',
@@ -102,7 +155,7 @@ weibo.trendsWeekly = function() {
 };
 
 //一日热门
-weibo.trendsDaily = function() {
+Weibo.prototype.trendsDaily = function() {
 	request(this.accessTokenMiddleware({
 			method: 'GET',
 			uri: weiboApiUrl + 'trends/daily' + '.json'
@@ -113,7 +166,7 @@ weibo.trendsDaily = function() {
 };
 
 //每时热门
-weibo.trendsHourly = function() {
+Weibo.prototype.trendsHourly = function() {
 	request(this.accessTokenMiddleware({
 			method: 'GET',
 			uri: weiboApiUrl + 'trends/hourly' + '.json'
@@ -124,7 +177,7 @@ weibo.trendsHourly = function() {
 };
 
 //返回系统推荐的热门收藏 - 只返回一条记录，为了bot的方便运行
-weibo.suggestionsFavoritesHot = function(next) {
+Weibo.prototype.suggestionsFavoritesHot = function(next) {
 	request(this.accessTokenMiddleware({
 			method: 'GET',
 			uri: weiboApiUrl + 'suggestions/favorites/hot' + '.json',
@@ -138,5 +191,4 @@ weibo.suggestionsFavoritesHot = function(next) {
 };
 
 
-
-module.exports = weibo;
+module.exports = Weibo;
