@@ -6,6 +6,7 @@ bot.tasks = [];
 bot.init = function(token, uid) {
 	this.accessToken = token;
 	this.uid = uid;
+	console.log('bot has been initiated, accessToken: ' + this.accessToken + ', uid: ' + this.uid);
 	return this;
 };
 
@@ -17,12 +18,14 @@ bot.start = function() {
 bot.run = function() {
 	for (var i = this.tasks.length - 1; i >= 0; i--) {
 		this.tasks[i].run();
+		console.log('task : [' + this.tasks[i].name + '] is on the go.');
 	}
 }
 
 bot.pushTasks = function(tasks) {
 	for (var i = tasks.length - 1; i >= 0; i--) {
 		this.tasks.push(tasks[i]);
+		console.log('task : [' + tasks[i].name + '] has been pushed to the bot');
 	}
 };
 
@@ -40,14 +43,20 @@ var Task = function Task(options) {
 };
 
 Task.prototype.run = function() {
-	var timeStamp = setInterval(function() {
-		if (!this.terminator() && this.repitator()) {
-			this.fn(this.option);
-			this.repitation--;
+	console.log('runned');
+	var self = this;
+	self.fn(self.option);
+	/*	var timeStamp = setInterval(function() {
+		if (!self.terminator() && self.repitator()) {
+			self.fn(self.option);
+			self.repitation--;
+			console.log('task runned:');
+			console.log('name :' + self.name);
 		} else {
 			clearInterval(timeStamp);
+			console.log('任务重复次数已尽');
 		}
-	}, this.interval);
+	}, self.interval);*/
 };
 
 Task.prototype.repitator = function() {
@@ -75,9 +84,9 @@ var retweet = new Task({
 	name: 'retweet',
 	fn: function() {
 		weibo.suggestionsFavoritesHot(function(body) {
-			var id = body.id;
+			var id = JSON.parse(body)[0].id;
 			weibo.statusesRepost(id, function(body) {
-				console.log(body);
+				console.log('该推荐微博已被转发' + JSON.parse(body));
 			});
 		});
 	},
@@ -102,7 +111,9 @@ var cancelFollow = new Task({
 					if (!sorted[i]['follow_me']) {
 						j = !j;
 						//remove watching
-						weibo.friendshipsDestroy(sorted[i].id);
+						weibo.friendshipsDestroy(sorted[i].id, function(body){
+							console.log('已取消关注某人');
+						});
 					}
 				}
 			});
@@ -125,7 +136,9 @@ var follow = new Task({
 			var activeFollowers = JSON.parse(body).users,
 				random = Math.floor(activeFollowers.length * Math.random()),
 				randomActiveFollower = activeFollowers[random];
-			weibo.friendshipsCreate(randomActiveFollower.id);
+			weibo.friendshipsCreate(randomActiveFollower.id, function(body){
+				console.log('已经关注某人');
+			});
 		});
 	},
 	interval: 2 * 60 * 1000

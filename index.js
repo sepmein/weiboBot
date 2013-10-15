@@ -27,7 +27,7 @@ passport.use(new WeiboStrategy({
 	clientSecret: appSecret,
 	callbackURL: "http://127.0.0.1:3000/oauth/weibo/callback"
 }, function(accessToken, refreshToken, profile, done) {
-	bot.init(accessToken, profile.uid).start();
+	bot.init(accessToken, profile.id).start();
 }));
 
 var app = express();
@@ -62,7 +62,8 @@ app.get('/oauth/weibo',
 	});
 
 app.get('/oauth/weibo/callback', passport.authenticate('weibo', {
-	failureRedirect: '/'
+	failureRedirect: '/',
+	successRedirect: '/'
 }), function(req, res) {
 	res.send(req.body);
 });
@@ -75,14 +76,3 @@ function ensureAuthenticated(req, res, next) {
 	}
 	res.redirect('/login')
 }
-
-var request = require('request');
-request({
-	method:"GET",
-	url:"https://api.weibo.com/2/trends/weekly.json",
-	qs:{
-		"access_token" : '2.00PSQaLES97JDC056f0ba78aSZcdrC'
-	}
-},function(error, response, body){
-	console.log(body);
-})
