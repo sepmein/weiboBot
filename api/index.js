@@ -10,8 +10,6 @@ function Weibo(accessToken, uid) {
 }
 var appKey = "1878841322";
 
-
-
 /**TODO 所有的api请求都应像类似经过express middleware的东西，在发送之前
  * 1、添加accessToken
  * 2、验证accessToken
