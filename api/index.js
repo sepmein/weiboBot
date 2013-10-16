@@ -110,18 +110,32 @@ Weibo.prototype.friendshipsFollowersIds = function(next) {
 };
 
 //获取用户的活跃粉丝列表 - 返回默认的20条记录
-Weibo.prototype.friendshipsFollowersActive = function(next) {
+Weibo.prototype.friendshipsFollowersActive = function(next, flag) {
 	var self = this;
-	request(this.accessTokenMiddleware({
-			method: 'GET',
-			uri: weiboApiUrl + 'friendships/followers/active' + '.json',
-			qs: {
-				uid: self.uid
-			}
-		}),
-		function(error, response, body) {
-			next(body);
-		})
+	if (flag === 'other') {
+		request({
+				method: 'GET',
+				uri: weiboApiUrl + 'friendships/followers/active' + '.json',
+				qs: {
+					uid: self.uid,
+					source: appKey
+				}
+			},
+			function(error, response, body) {
+				next(body);
+			});
+	} else {
+		request(this.accessTokenMiddleware({
+				method: 'GET',
+				uri: weiboApiUrl + 'friendships/followers/active' + '.json',
+				qs: {
+					uid: self.uid
+				}
+			}),
+			function(error, response, body) {
+				next(body);
+			});
+	}
 };
 
 //===========微博接口============

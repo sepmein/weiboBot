@@ -135,8 +135,14 @@ var follow = new Task({
 			var activeFollowers = JSON.parse(body).users,
 				random = Math.floor(activeFollowers.length * Math.random()),
 				randomActiveFollower = activeFollowers[random];
-			bot.weibo.friendshipsCreate(randomActiveFollower.id, function(body) {
-				console.log('已经关注某人');
+			bot.weibo.friendshipsFollowersActive(function(body) {
+				var activeFollowersNext = JSON.parse(body).users,
+					randomNext = Math.floor(activeFollowersNext.length * Math.random()),
+					randomActiveFollowerNext = activeFollowers[randomNext];
+				bot.weibo.friendshipsCreate(randomActiveFollowerNext.id, function(body) {
+					console.log('已经关注某人');
+				}, 'other');
+
 			});
 		});
 	},
